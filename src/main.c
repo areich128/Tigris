@@ -1,6 +1,8 @@
-#include <stdio.h>
-#include "driver/i2c.h"
 #include "bmp.h"
+#include "i2c_funcs.h"
+// #include "driver/i2c.h"
+
+#define LED_PIN GPIO_NUM_2
 
 struct packet {
     uint32_t pressure;
@@ -26,26 +28,23 @@ struct packet {
 };
 
 void app_main() {
-    // Initialize I2C master
-    // i2c_master_init();
-
-    // uint8_t sensor_data[2];
-    // while (1) {
-
-    //     // Read 2 bytes of data from the sensor
-    //     if (i2c_read_sensor(BMP_ADDR, sensor_data, 2) == ESP_OK) {
-    //         printf("Sensor Data: %02x %02x\n", sensor_data[0], sensor_data[1]);
-    //     } else {
-    //         printf("Failed to read from sensor\n");
-    //     }
-    //     vTaskDelay(1000 / portTICK_RATE_MS);  // Delay 1 second
-    // }
+    
+    gpio_config_t io_conf;
+    io_conf.intr_type = GPIO_INTR_DISABLE;    // Disable interrupt
+    io_conf.mode = GPIO_MODE_OUTPUT;          // Set mode to output
+    io_conf.pin_bit_mask = (1ULL << LED_PIN); // Select GPIO pin
+    io_conf.pull_down_en = 0;                 // Disable pull-down
+    io_conf.pull_up_en = 0;                   // Disable pull-up
+    gpio_config(&io_conf); 
 
     i2c_master_init();
     BMP_startup();
 
     while (1) {
-                
+        gpio_set_level(LED_PIN, 1); // Turn on LED
+        vTaskDelay(1000 / portTICK_PERIOD_MS); // Wait for 1 second
+        gpio_set_level(LED_PIN, 0); // Turn off LED
+        vTaskDelay(1000 / portTICK_PERIOD_MS);
     }
 
     return;
